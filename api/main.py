@@ -39,7 +39,6 @@ class PatentOpportunity(Base):
     patent_date = Column(String)
     created_at = Column(DateTime)
 
-
 # ──────────────────────────── FastAPI App ────────────────────────────
 app = FastAPI(title="OpenPatents API", version="2.0.0")
 

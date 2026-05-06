@@ -154,8 +154,14 @@ async function loadOpportunities() {
             return;
         }
 
-        grid.innerHTML = '';
-        data.forEach(opp => grid.appendChild(createCard(opp)));
+        const empty = grid.querySelector('.empty-state');
+        if (empty) empty.remove();
+
+        data.forEach(opp => {
+            if (!document.getElementById(`card-${opp.id}`)) {
+                grid.appendChild(createCard(opp));
+            }
+        });
     } catch (err) {
         grid.innerHTML = `<div class="loader">❌ Erro ao conectar com a API: ${err.message}</div>`;
     }
@@ -165,6 +171,7 @@ async function loadOpportunities() {
 function createCard(opp) {
     const card = document.createElement('div');
     card.className = 'card';
+    card.id = `card-${opp.id}`;
 
     // Complexity bar
     const dots = Array.from({ length: 5 }, (_, i) =>
@@ -176,6 +183,7 @@ function createCard(opp) {
     const tierClass = tierMap[opp.investment_tier] || '';
 
     const dateStr = opp.patent_date ? `Concedida: ${opp.patent_date}` : '';
+    const sourceUrl = `https://europepmc.org/article/PAT/${opp.id}`;
 
     card.innerHTML = `
         <div class="card-header">
@@ -184,6 +192,10 @@ function createCard(opp) {
                 ${opp.source_query ? `<span class="badge badge-niche">${opp.source_query}</span>` : ''}
                 ${dateStr ? `<span class="badge badge-date">${dateStr}</span>` : ''}
             </div>
+        </div>
+
+        <div class="card-actions">
+            <a href="${sourceUrl}" target="_blank" class="action-btn source-btn">Ver Fonte Original ↗</a>
         </div>
 
         <div class="analysis-box">
@@ -218,6 +230,8 @@ function createCard(opp) {
     `;
     return card;
 }
+
+
 
 function formatInputs(raw) {
     if (!raw) return '—';
