@@ -1,0 +1,51 @@
+
+
+## 📋 Resumo do Projeto: OpenPatents
+O **OpenPatents** é um ecossistema de inteligência competitiva projetado para minerar dados públicos de patentes e tecnologias expiradas, transformando descrições técnicas complexas em **oportunidades de negócio viáveis** para o cenário de 2026. 
+
+O sistema automatiza o ciclo de:
+1.  **Extração:** Coleta de dados brutos (Scraping).
+2.  **Triagem:** Identificação de nichos de mercado (Agro, Pet, Industrial).
+3.  **Análise de Viabilidade:** Uso de IA local para calcular custos de insumos modernos e tempo de desenvolvimento (MVP).
+
+---
+
+## 🛠️ Stack Tecnológica
+Estamos utilizando uma arquitetura modular baseada em **Micro-serviços Logicamente Separados** (Multi-Root Workspace):
+
+| Camada | Tecnologia | Objetivo |
+| :--- | :--- | :--- |
+| **Ambiente de Dev** | **Antigravity** (Fork VS Code) | Editor de alta performance para o Workspace. |
+| **Gerenciador de Pacotes** | **uv** (by Astral) | Isolamento de ambientes (`.venv`) e performance 10x superior ao pip. |
+| **Linguagem** | **Python 3.12+** | Foco em legibilidade e tipagem. |
+| **Banco de Dados** | **PostgreSQL 16 (Docker)** | Persistência robusta com containerização Alpine. |
+| **ORM** | **SQLAlchemy** | Abstração de banco para evitar SQL puro e facilitar manutenção. |
+| **IA Engine** | **Ollama (Mistral-Nemo)** | Processamento de linguagem natural (LLM) rodando localmente (Edge AI). |
+| **Logs & Monitoramento** | **Custom Logger & Decorators** | Rastreabilidade total e captura de falhas em tempo real. |
+
+---
+
+## ⚙️ Parâmetros e Objetivos (Database Schema)
+Cada parâmetro na nossa tabela `opportunities` foi desenhado para alimentar uma tomada de decisão estratégica:
+
+### Metadados de Identificação
+*   **`id`**: Identificador único da patente (evita duplicidade no banco).
+*   **`title`**: Nome original da tecnologia.
+*   **`status`**: Controla o fluxo de trabalho (`pending`, `processed`, `failed`). Essencial para o **Fail-Fast**.
+
+### Parâmetros de Inteligência (Alvo da IA)
+*   **`niche`**: Categoriza a patente (ex: Logística Verde, Agro-Tech). Permite filtragem por mercado.
+*   **`concept`**: Resumo simplificado da tecnologia para leitura rápida humana.
+*   **`modern_inputs`**: Lista insumos disponíveis em 2026 que substituem componentes obsoletos da patente original.
+*   **`investment_tier`**: Classifica o capital necessário (Baixo, Médio, Alto).
+*   **`mvp_complexity`**: Escala de 1 a 5 para dificuldade técnica de construir o primeiro protótipo.
+*   **`time_to_market`**: Estimativa de meses para lançar a solução no mercado.
+
+---
+
+## 🚀 Próximos Passos
+Com o banco e o scraper validados, nossa próxima "missão" é o **Módulo de Processamento**:
+1.  Ler registros com `status='pending'`.
+2.  Passar o texto bruto pelo **Mistral-Nemo**.
+3.  Fazer o **Update** no banco com as informações estratégicas preenchidas.
+

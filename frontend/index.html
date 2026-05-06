@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenPatents — Inteligência Competitiva de Patentes</title>
+    <meta name="description" content="Busque patentes expiradas por nicho e transforme tecnologia em oportunidade de negócio com análise de IA local.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+
+        <!-- Cabeçalho -->
+        <nav>
+            <div class="logo">OpenPatents</div>
+            <div class="stats">
+                <span class="stat-item">
+                    <span class="label">Total:</span>
+                    <span class="value" id="total-count">–</span>
+                </span>
+                <span class="stat-item">
+                    <span class="label">Analisadas:</span>
+                    <span class="value" id="processed-count">–</span>
+                </span>
+                <span class="stat-item">
+                    <span class="label">Na fila:</span>
+                    <span class="value" id="pending-count">–</span>
+                </span>
+            </div>
+        </nav>
+
+        <!-- Painel de Busca -->
+        <section id="search-panel">
+            <h1>Busca de Patentes por Nicho</h1>
+            <p class="subtitle">Selecione um nicho e acione a busca. Patentes reais serão importadas e analisadas automaticamente pelo Mistral-Nemo.</p>
+
+            <div id="niche-selector">
+                <!-- Botões injetados via JS -->
+            </div>
+
+            <div id="search-controls">
+                <div class="limit-control">
+                    <label for="limit-input">Patentes por busca:</label>
+                    <input type="number" id="limit-input" value="5" min="1" max="50">
+                </div>
+                <button id="search-btn" disabled>
+                    <span id="btn-text">Selecione um nicho</span>
+                </button>
+            </div>
+
+            <div id="search-status" class="hidden"></div>
+        </section>
+
+        <!-- Filtro de Nicho nos Resultados -->
+        <section id="results-header">
+            <h2>Oportunidades Analisadas</h2>
+            <div id="filter-bar">
+                <span class="filter-label">Filtrar:</span>
+                <button class="filter-btn active" data-niche="">Todos</button>
+                <!-- Botões de filtro injetados via JS -->
+            </div>
+        </section>
+
+        <!-- Grid de Resultados -->
+        <main id="opportunities-grid">
+            <div class="loader">Carregando oportunidades...</div>
+        </main>
+
+    </div>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
