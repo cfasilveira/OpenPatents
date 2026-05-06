@@ -167,11 +167,22 @@ async function loadOpportunities() {
     }
 }
 
+// ── Utility: Anti-XSS ────────────────────────────────────────────────
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // ── Card Builder ───────────────────────────────────────────────────
 function createCard(opp) {
     const card = document.createElement('div');
     card.className = 'card';
-    card.id = `card-${opp.id}`;
+    card.id = `card-${escapeHTML(opp.id)}`;
 
     // Complexity bar
     const dots = Array.from({ length: 5 }, (_, i) =>
@@ -182,14 +193,14 @@ function createCard(opp) {
     const tierMap = { 'Baixo': 'tier-baixo', 'Médio': 'tier-medio', 'Alto': 'tier-alto' };
     const tierClass = tierMap[opp.investment_tier] || '';
 
-    const dateStr = opp.patent_date ? `Concedida: ${opp.patent_date}` : '';
-    const sourceUrl = `https://europepmc.org/article/PAT/${opp.id}`;
+    const dateStr = opp.patent_date ? `Concedida: ${escapeHTML(opp.patent_date)}` : '';
+    const sourceUrl = `https://europepmc.org/article/PAT/${encodeURIComponent(opp.id)}`;
 
     card.innerHTML = `
         <div class="card-header">
-            <div class="card-title">${opp.title}</div>
+            <div class="card-title">${escapeHTML(opp.title)}</div>
             <div class="card-meta">
-                ${opp.source_query ? `<span class="badge badge-niche">${opp.source_query}</span>` : ''}
+                ${opp.source_query ? `<span class="badge badge-niche">${escapeHTML(opp.source_query)}</span>` : ''}
                 ${dateStr ? `<span class="badge badge-date">${dateStr}</span>` : ''}
             </div>
         </div>
@@ -200,7 +211,7 @@ function createCard(opp) {
 
         <div class="analysis-box">
             <div class="label">Conceito de Negócio</div>
-            <div class="content">${opp.concept || '—'}</div>
+            <div class="content">${escapeHTML(opp.concept) || '—'}</div>
         </div>
 
         <div class="analysis-box">
@@ -211,20 +222,20 @@ function createCard(opp) {
         <div class="details-grid">
             <div class="detail-item">
                 <span class="label">Investimento</span>
-                <span class="val ${tierClass}">${opp.investment_tier || '—'}</span>
+                <span class="val ${tierClass}">${escapeHTML(opp.investment_tier) || '—'}</span>
             </div>
             <div class="detail-item">
                 <span class="label">Complexidade MVP</span>
                 <div class="complexity-bar">${dots}</div>
-                <span class="val">${opp.mvp_complexity || '—'}/5</span>
+                <span class="val">${escapeHTML(opp.mvp_complexity) || '—'}/5</span>
             </div>
             <div class="detail-item">
                 <span class="label">Time to Market</span>
-                <span class="val">${opp.time_to_market || '—'}</span>
+                <span class="val">${escapeHTML(opp.time_to_market) || '—'}</span>
             </div>
             <div class="detail-item">
                 <span class="label">Nicho</span>
-                <span class="val">${opp.niche || opp.source_query || '—'}</span>
+                <span class="val">${escapeHTML(opp.niche) || escapeHTML(opp.source_query) || '—'}</span>
             </div>
         </div>
     `;
@@ -238,8 +249,8 @@ function formatInputs(raw) {
     // Remove Postgres set notation { "a", "b" } if present
     const cleaned = raw.replace(/^\{|\}$/g, '').replace(/"/g, '').trim();
     const items = cleaned.split(',').map(s => s.trim()).filter(Boolean);
-    if (items.length <= 1) return cleaned || '—';
-    return items.map(i => `• ${i}`).join('<br>');
+    if (items.length <= 1) return escapeHTML(cleaned) || '—';
+    return items.map(i => `• ${escapeHTML(i)}`).join('<br>');
 }
 
 // ── Start ──────────────────────────────────────────────────────────
