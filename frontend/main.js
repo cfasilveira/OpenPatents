@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8000';
+const API_URL = window.location.origin;
 
 // ── State ──────────────────────────────────────────────────────────
 let selectedNiche = null;
@@ -154,12 +154,17 @@ async function loadOpportunities() {
             return;
         }
 
-        const empty = grid.querySelector('.empty-state');
-        if (empty) empty.remove();
+        // Clear grid first to support clean filtering and layout in-feed ads
+        grid.innerHTML = '';
 
+        let cardCount = 0;
         data.forEach(opp => {
-            if (!document.getElementById(`card-${opp.id}`)) {
-                grid.appendChild(createCard(opp));
+            grid.appendChild(createCard(opp));
+            cardCount++;
+
+            // Inject a native premium ad card after every 3 patents!
+            if (cardCount % 3 === 0 && cardCount < data.length) {
+                grid.appendChild(createAdCard(Math.floor(cardCount / 3) - 1));
             }
         });
     } catch (err) {
@@ -242,7 +247,57 @@ function createCard(opp) {
     return card;
 }
 
+// ── sponsoredAds (Advertising Monetization Demonstration) ─────────────────────────────
+const sponsoredAds = [
+    {
+        title: "Infraestrutura de Nuvem para Startups e IA com Carlos Cloud",
+        sponsor: "CarlosCloud Enterprise",
+        description: "Hospede seu processamento de IA local na nuvem com servidores GPU Nvidia H100 sob demanda. Ganhe US$ 100 em créditos de boas-vindas para novos projetos.",
+        tagline: "NUVEM & GPU",
+        cta: "Resgatar US$ 100 Grátis",
+        url: "#"
+    },
+    {
+        title: "Consultoria Especializada em Registro de Patentes e Propriedade Intelectual",
+        sponsor: "BR Patents Advogados",
+        description: "Proteja suas inovações e garanta exclusividade de mercado com a maior equipe jurídica de propriedade intelectual do Brasil. Auditoria de patentes gratuita.",
+        tagline: "JURÍDICO & IP",
+        cta: "Falar com Especialista",
+        url: "#"
+    },
+    {
+        title: "Acelere seu MVP de Tecnologia com Desenvolvimento Inteligente",
+        sponsor: "CarlosDev Labs",
+        description: "Precisa de ajuda para tirar a sua ideia do papel? Nós construímos o seu MVP de SaaS ou Inteligência Artificial em tempo recorde com design e arquitetura premium.",
+        tagline: "DESENVOLVIMENTO",
+        cta: "Solicitar Orçamento",
+        url: "#"
+    }
+];
 
+function createAdCard(index) {
+    const ad = sponsoredAds[index % sponsoredAds.length];
+    const card = document.createElement('div');
+    card.className = 'card ad-card';
+    card.innerHTML = `
+        <div class="card-header">
+            <div class="card-title sponsored-title">${escapeHTML(ad.title)}</div>
+            <div class="card-meta">
+                <span class="badge badge-sponsored">PATROCINADO</span>
+                <span class="badge badge-partner">${escapeHTML(ad.sponsor)}</span>
+            </div>
+        </div>
+        <div class="analysis-box ad-body">
+            <div class="label">Destaque do Parceiro</div>
+            <div class="content">${escapeHTML(ad.description)}</div>
+        </div>
+        <div class="ad-actions">
+            <span class="ad-tagline">${escapeHTML(ad.tagline)}</span>
+            <a href="${escapeHTML(ad.url)}" class="ad-cta-btn">${escapeHTML(ad.cta)} →</a>
+        </div>
+    `;
+    return card;
+}
 
 function formatInputs(raw) {
     if (!raw) return '—';

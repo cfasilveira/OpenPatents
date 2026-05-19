@@ -8,6 +8,13 @@ class PatentProcessor:
     def __init__(self):
         self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
         self.model_name = os.getenv("MODEL_NAME", "mistral-nemo")
+        self.groq_api_key = os.getenv("GROQ_API_KEY")
+        self.groq_model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+        
+        if self.groq_api_key:
+            logger.info(f"📡 Provedor de IA configurado: Groq Cloud API ({self.groq_model})")
+        else:
+            logger.info(f"📡 Provedor de IA configurado: Ollama Local ({self.model_name})")
 
     @safe_execution
     def process_pending(self):
@@ -37,25 +44,63 @@ class PatentProcessor:
         prompt = self._build_prompt(patent.title, patent.description)
         
         try:
-            response = requests.post(
-                f"{self.ollama_url}/api/generate",
-                json={
-                    "model": self.model_name,
-                    "prompt": prompt,
-                    "stream": False,
-                    "format": "json"
-                },
-                timeout=60
-            )
+            if self.groq_api_key:
+                # Fluxo Groq Cloud API
+                headers = {
+                    "Authorization": f"Bearer {self.groq_api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": self.groq_model,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "Você é um especialista em Inteligência Competitiva e Inovação. Analise a patente e responda EXCLUSIVAMENTE em formato JSON."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    "response_format": {"type": "json_object"},
+                    "temperature": 0.2
+                }
+                response = requests.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers=headers,
+                    json=payload,
+                    timeout=30
+                )
+            else:
+                # Fluxo Ollama Local
+                response = requests.post(
+                    f"{self.ollama_url}/api/generate",
+                    json={
+                        "model": self.model_name,
+                        "prompt": prompt,
+                        "stream": False,
+                        "format": "json"
+                    },
+                    timeout=300
+                )
             
             if response.status_code == 200:
-                result = response.json().get("response")
+                if self.groq_api_key:
+                    result = response.json()["choices"][0]["message"]["content"]
+                else:
+                    result = response.json().get("response")
+                
                 data = json.loads(result)
+                
+                # Formatar insumos modernos se vierem como lista
+                modern_inputs = data.get("modern_inputs")
+                if isinstance(modern_inputs, list):
+                    modern_inputs = ", ".join(modern_inputs)
                 
                 # Atualizando campos
                 patent.niche = data.get("niche")
                 patent.concept = data.get("concept")
-                patent.modern_inputs = data.get("modern_inputs")
+                patent.modern_inputs = modern_inputs
                 patent.investment_tier = data.get("investment_tier")
                 patent.mvp_complexity = data.get("mvp_complexity")
                 patent.time_to_market = data.get("time_to_market")
@@ -64,7 +109,7 @@ class PatentProcessor:
                 session.commit()
                 logger.info(f"✅ Sucesso: {patent.title} processada.")
             else:
-                logger.error(f"❌ Erro Ollama ({response.status_code}): {response.text}")
+                logger.error(f"❌ Erro na API do LLM ({response.status_code}): {response.text}")
                 patent.status = 'failed'
                 session.commit()
 

@@ -2,6 +2,7 @@ import os
 import sys
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, String, Integer, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
@@ -129,6 +130,12 @@ def get_stats(db: Session = Depends(get_db)):
         "pending": pending,
         "failed": failed,
     }
+
+
+# Mount the compiled static files of the frontend build
+frontend_dist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
+if os.path.exists(frontend_dist_path):
+    app.mount("/", StaticFiles(directory=frontend_dist_path, html=True), name="frontend")
 
 
 if __name__ == "__main__":
